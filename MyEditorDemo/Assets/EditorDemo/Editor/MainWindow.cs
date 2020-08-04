@@ -15,6 +15,10 @@ public class MainWindow : SearchableEditorWindow {
     private Texture2D mGraphBgTexture;
     private Texture2D mGraphFgTexture;
 
+
+    private string mText;
+    private Texture mTexture;
+
     [MenuItem("Window/MyEditor/Open")]
     static void OpenMainWindow()
     {
@@ -28,6 +32,10 @@ public class MainWindow : SearchableEditorWindow {
         mainWindow.Show();
     }
 
+    private void Awake()
+    {
+        mTexture = Resources.Load<Texture>("/colorTex/blue");
+    }
     private void CreateNewGraph(string graphName)
     {
         if(mainGraphInstance == null)
@@ -49,10 +57,37 @@ public class MainWindow : SearchableEditorWindow {
     }
     private void OnGUI()
     {
+        mText = EditorGUILayout.TextField("输入文字：",mText);
         EditorGUILayout.LabelField("Mouse Position:", Event.current.mousePosition.ToString());
-        if(Event.current.type == EventType.MouseMove)
+
+        if(GUILayout.Button("打开通知",GUILayout.Width(200)))
         {
-            Repaint();
+            this.ShowNotification(new GUIContent("This is a Notification."));
         }
+        if (GUILayout.Button("关闭通知", GUILayout.Width(200)))
+        {
+            //关闭通知栏
+            this.RemoveNotification();
+        }
+        mTexture = EditorGUILayout.ObjectField("添加贴图", mTexture, typeof(Texture), true) as Texture;
+        if(GUILayout.Button("关闭窗口",GUILayout.Width(200)))
+        {
+            this.Close();
+        }
+
+    }
+    void OnFocus()
+    {
+        Debug.Log("当窗口获得焦点时调用一次");
+    }
+
+    void OnLostFocus()
+    {
+        Debug.Log("当窗口丢失焦点时调用一次");
+    }
+
+    private void OnInspectorUpdate()
+    {
+        this.Repaint();
     }
 }
