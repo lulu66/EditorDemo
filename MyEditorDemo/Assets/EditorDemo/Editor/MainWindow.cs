@@ -13,9 +13,20 @@ public class MainWindow : SearchableEditorWindow {
     private ToolsWindow toolsWindow;
 
     private string mText;
-    private Texture mTexture;
-    
+    private Texture2D mFgTexture;
+	private Texture2D mBgTexture;
+
     private Event mCurrentEvent;
+	private Rect mGraphArea;
+
+	private bool mInitialized = false;
+	[SerializeField]
+	private Vector2 mCameraOffset;
+
+	[SerializeField]
+	private float mCameraZoom;
+
+	private Rect mCameraInfo;
 
     public Event CurrentEvent
     {
@@ -55,11 +66,43 @@ public class MainWindow : SearchableEditorWindow {
     {
         base.OnEnable();
         toolsWindow = new ToolsWindow(this);
-    }
+		mCameraOffset = new Vector2(0,0);
+		mCameraZoom = 1;
 
+	}
+
+	void init()
+	{
+		mGraphArea = new Rect(0,0,position.width, position.height);
+		mCameraInfo = position;
+		mBgTexture = AssetDatabase.LoadAssetAtPath("Assets\\EditorDemo\\EditorResources\\UI\\Canvas\\Grid128.png", typeof(Texture2D)) as Texture2D;
+		if(mBgTexture)
+		{
+			mFgTexture = AssetDatabase.LoadAssetAtPath("Assets\\EditorDemo\\EditorResources\\UI\\Canvas\\TransparentOverlay.png", typeof(Texture2D)) as Texture2D;
+		}
+		mInitialized = mBgTexture != null && mFgTexture != null;
+	}
     private void OnGUI()
     {
         mCurrentEvent = Event.current;
-    }
+		if(!mInitialized)
+		{
+			init();
+		}
+		GUI.DrawTextureWithTexCoords(mGraphArea, mBgTexture, new Rect((-mCameraOffset.x / mBgTexture.width),
+								(mCameraOffset.y / mBgTexture.height) - mCameraZoom * mCameraInfo.height / mBgTexture.height,
+								mCameraZoom * mCameraInfo.width / mBgTexture.width,
+								mCameraZoom * mCameraInfo.height / mBgTexture.height));
+		Color col = GUI.color;
+		GUI.color = new Color(1, 1, 1, 0.7f);
+		GUI.DrawTexture(mGraphArea, mFgTexture, ScaleMode.StretchToFill, true);
+		GUI.color = col;
 
+	}
+
+	private void Destroy()
+	{
+		Resources.UnloadAsset(mFgTexture);
+		Resources.UnloadAsset(mBgTexture);
+	}
 }
